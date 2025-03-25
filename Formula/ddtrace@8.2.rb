@@ -43,4 +43,9 @@ class DdtraceAT81 < Formula
     match = version.match(/PHP ([0-9]+\.[0-9]+)/)
     match ? match[1] : "8.2"
   end
+
+  test do
+    output = shell_output("#{Formula["php@8.2"].opt_bin}/php -m")
+    assert_match(/ddtrace/, output)
+  end
 end
