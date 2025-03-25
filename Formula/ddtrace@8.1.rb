@@ -4,11 +4,11 @@ class DdtraceAT81 < Formula
   sha256 "db5661a1bc859f4fe0f4b8bc50012ac3655ba0d7d0b5380b1b92bc8caa9a54e9"
   license "Apache-2.0"
 
-  depends_on "php@8.1"
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
   depends_on "rust" => :build
+  depends_on "php@8.1"
 
   def install
     php_config = "#{Formula["php@8.1"].opt_bin}/php-config"
