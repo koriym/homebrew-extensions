@@ -2,6 +2,7 @@ class DdtraceAT81 < Formula
   desc "Datadog tracing and profiling PECL extension"
   url "https://pecl.php.net/get/datadog_trace-1.7.2.tgz"
   sha256 "db5661a1bc859f4fe0f4b8bc50012ac3655ba0d7d0b5380b1b92bc8caa9a54e9"
+  homepage "https://github.com/koriym/homebrew-extensions"
   license "Apache-2.0"
 
   depends_on "autoconf" => :build
