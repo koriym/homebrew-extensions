@@ -19,7 +19,7 @@ jobs:
     name: PHP ${{ matrix.php-version }} Build Test
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Homebrew
         run: |
