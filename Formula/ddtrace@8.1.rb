@@ -22,7 +22,7 @@ class DdtraceAT81 < Formula
     ext_config_path = etc/"php"/php_version/"conf.d"/"20-ddtrace.ini"
     ext_config_path.dirname.mkpath
 
-    # 設定ファイルが存在しない場合のみ作成
+    # Create configuration file only if it doesn't exist
     unless ext_config_path.exist?
       ext_config_path.write <<~EOS
         [ddtrace]
