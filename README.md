@@ -12,8 +12,8 @@ This repository contains Homebrew formulae for PHP extensions optimized for deve
 # Add the tap
 brew tap koriym/extensions
 
-# Install a formula
-brew install koriym/extensions/ddtrace
+# Install a formula for PHP 8.3
+brew install koriym/extensions/ddtrace@8.3
 ```
 
 ## Development
@@ -23,7 +23,7 @@ To install the latest version of a formula from the repository, run the followin
 ```bash
 git clone https://github.com/koriym/homebrew-extensions.git
 cd homebrew-extensions
-brew install -s ./ddtrace.rb
+brew install -s ./Formula/ddtrace@8.3.rb
 ```
 
 ## Features
