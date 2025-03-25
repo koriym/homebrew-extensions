@@ -1,14 +1,15 @@
-class DdtraceAT82 < Formula
+class DdtraceAT81 < Formula
   desc "Datadog tracing and profiling PECL extension"
+  homepage "https://github.com/koriym/homebrew-extensions"
   url "https://pecl.php.net/get/datadog_trace-1.7.2.tgz"
   sha256 "db5661a1bc859f4fe0f4b8bc50012ac3655ba0d7d0b5380b1b92bc8caa9a54e9"
   license "Apache-2.0"
 
-  depends_on "php@8.2"
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
   depends_on "rust" => :build
+  depends_on "php@8.2"
 
   def install
     php_config = "#{Formula["php@8.2"].opt_bin}/php-config"
