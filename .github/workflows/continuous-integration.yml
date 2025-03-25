@@ -1,0 +1,94 @@
+name: Homebrew Formula Matrix Build Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  build-test:
+    runs-on: macos-latest  # Using macOS for Homebrew
+
+    strategy:
+      matrix:
+        php-version: ['8.1', '8.2', '8.3', '8.4']
+      fail-fast: false  # Continue with other versions if one fails
+
+    name: PHP ${{ matrix.php-version }} Build Test
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Homebrew
+        run: |
+          brew update
+
+      - name: Install PHP and dependencies
+        run: |
+          # Check if PHP version exists in Homebrew
+          if brew info php@${{ matrix.php-version }} &>/dev/null; then
+            brew install php@${{ matrix.php-version }} autoconf automake libtool rust
+            brew link --force php@${{ matrix.php-version }}
+          else
+            echo "PHP ${{ matrix.php-version }} not available in Homebrew"
+            exit 1
+          fi
+
+      - name: Add tap to Homebrew
+        run: |
+          # Add local tap pointing to the current repository
+          REPO_DIR=$(pwd)
+          brew tap local/tap $REPO_DIR
+
+      - name: Audit formula for PHP ${{ matrix.php-version }}
+        run: |
+          # Check if the formula exists for this PHP version
+          if [ -f "$GITHUB_WORKSPACE/Formula/ddtrace-at${{ matrix.php-version }}.rb" ]; then
+            brew audit --strict Formula/ddtrace-at${{ matrix.php-version }}.rb
+          else
+            echo "Formula for PHP ${{ matrix.php-version }} not found, skipping audit"
+          fi
+
+      - name: Test formula installation
+        run: |
+          # Attempt to install the formula for this PHP version
+          if [ -f "$GITHUB_WORKSPACE/Formula/ddtrace-at${{ matrix.php-version }}.rb" ]; then
+            brew install --build-from-source Formula/ddtrace-at${{ matrix.php-version }}.rb
+            FORMULA_INSTALLED=1
+          else
+            echo "Formula for PHP ${{ matrix.php-version }} not found, skipping installation"
+            FORMULA_INSTALLED=0
+          fi
+          echo "FORMULA_INSTALLED=$FORMULA_INSTALLED" >> $GITHUB_ENV
+
+      - name: Verify installation
+        if: env.FORMULA_INSTALLED == 1
+        run: |
+          # Verify installation
+          brew list ddtrace-at${{ matrix.php-version }}
+          # Check if extension module exists
+          test -f $(brew --prefix ddtrace-at${{ matrix.php-version }})/ddtrace.so
+
+      - name: Test PHP extension loading
+        if: env.FORMULA_INSTALLED == 1
+        run: |
+          # Create PHP ini directory if it doesn't exist
+          PHP_INI_DIR=$(php -r "echo php_ini_loaded_file();")
+          PHP_CONF_DIR=$(dirname "$PHP_INI_DIR")/conf.d
+          sudo mkdir -p $PHP_CONF_DIR
+          
+          # Create extension config file
+          echo "extension=$(brew --prefix ddtrace-at${{ matrix.php-version }})/ddtrace.so" | sudo tee $PHP_CONF_DIR/ddtrace.ini
+          
+          # Verify PHP extension loads correctly
+          php -m | grep ddtrace || { echo "Extension not loaded"; exit 1; }
+
+      - name: Run basic extension test
+        if: env.FORMULA_INSTALLED == 1
+        run: |
+          # Create a simple test script
+          echo '<?php if (extension_loaded("ddtrace")) { echo "ddtrace extension loaded successfully\n"; } else { echo "ddtrace extension not loaded\n"; exit(1); } ?>' > test.php
+          # Run the test
+          php test.php
