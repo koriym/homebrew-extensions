@@ -1,4 +1,4 @@
-class DdtraceAT81 < Formula
+class DdtraceAT83 < Formula
   desc "Datadog tracing and profiling PECL extension"
   homepage "https://github.com/koriym/homebrew-extensions"
   url "https://pecl.php.net/get/datadog_trace-1.7.2.tgz"
