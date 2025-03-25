@@ -69,7 +69,7 @@ jobs:
           brew list ${{ env.FORMULA_NAME }}
           
           # Find the ddtrace.so file location
-          EXTENSION_PATH=$(find $(brew --prefix ${{ env.FORMULA_NAME }}) -name "ddtrace.so" | head -n 1)
+          EXTENSION_PATH=$(find -L $(brew --prefix ${{ env.FORMULA_NAME }}) -name "ddtrace.so" | head -n 1)
           
           if [ -n "$EXTENSION_PATH" ]; then
             echo "EXTENSION_PATH=$EXTENSION_PATH" >> $GITHUB_ENV
