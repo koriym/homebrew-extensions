@@ -2,9 +2,12 @@
 
 This repository contains Homebrew formulae for PHP extensions optimized for development environments.
 
-## Available Formulae
+# Available Formulae
 
-- `ddtrace`: Datadog APM PHP extension for tracing and profiling
+- `ddtrace@8.1`: Datadog APM PHP extension for PHP 8.1
+- `ddtrace@8.2`: Datadog APM PHP extension for PHP 8.2
+- `ddtrace@8.3`: Datadog APM PHP extension for PHP 8.3
+- `ddtrace@8.4`: Datadog APM PHP extension for PHP 8.4
 
 ## Installation
 
