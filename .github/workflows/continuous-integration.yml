@@ -45,8 +45,7 @@ jobs:
           # Determine if formula exists for this PHP version
           if [ -f "$GITHUB_WORKSPACE/Formula/ddtrace@${{ matrix.php-version }}.rb" ]; then
             echo "FORMULA_EXISTS=1" >> $GITHUB_ENV
-            echo "FORMULA_PATH=Formula/ddtrace@${{ matrix.php-version }}.rb" >> $GITHUB_ENV
-            echo "FORMULA_NAME=ddtrace@${{ matrix.php-version }}" >> $GITHUB_ENV
+            echo "FORMULA_NAME=local/tap/ddtrace@${{ matrix.php-version }}" >> $GITHUB_ENV
           else
             echo "Formula for PHP ${{ matrix.php-version }} not found"
             echo "FORMULA_EXISTS=0" >> $GITHUB_ENV
@@ -55,12 +54,13 @@ jobs:
       - name: Audit formula for PHP ${{ matrix.php-version }}
         if: env.FORMULA_EXISTS == 1
         run: |
-          brew audit --strict ${{ env.FORMULA_PATH }}
+          # Use formula name instead of path
+          brew audit --strict ${{ env.FORMULA_NAME }}
 
       - name: Test formula installation
         if: env.FORMULA_EXISTS == 1
         run: |
-          brew install --build-from-source ${{ env.FORMULA_PATH }}
+          brew install --build-from-source ${{ env.FORMULA_NAME }}
 
       - name: Verify installation
         if: env.FORMULA_EXISTS == 1
