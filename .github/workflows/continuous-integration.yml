@@ -1,0 +1,102 @@
+name: Homebrew Formula Matrix Build Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  build-test:
+    runs-on: macos-latest  # Using macOS for Homebrew
+
+    strategy:
+      matrix:
+        php-version: ['8.1', '8.2', '8.3', '8.4']
+      fail-fast: false  # Continue with other versions if one fails
+
+    name: PHP ${{ matrix.php-version }} Build Test
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Homebrew
+        run: |
+          brew update
+
+      - name: Install PHP and dependencies
+        run: |
+          # Check if PHP version exists in Homebrew
+          if brew info php@${{ matrix.php-version }} &>/dev/null; then
+            brew install php@${{ matrix.php-version }} autoconf automake libtool rust
+            brew link --force php@${{ matrix.php-version }}
+          else
+            echo "PHP ${{ matrix.php-version }} not available in Homebrew"
+            exit 1
+          fi
+
+      - name: Add tap to Homebrew
+        run: |
+          # Add local tap pointing to the current repository
+          REPO_DIR=$(pwd)
+          brew tap local/tap $REPO_DIR
+
+      - name: Check for formula
+        run: |
+          # Determine if formula exists for this PHP version
+          if [ -f "$GITHUB_WORKSPACE/Formula/ddtrace@${{ matrix.php-version }}.rb" ]; then
+            echo "FORMULA_EXISTS=1" >> $GITHUB_ENV
+            echo "FORMULA_NAME=local/tap/ddtrace@${{ matrix.php-version }}" >> $GITHUB_ENV
+          else
+            echo "Formula for PHP ${{ matrix.php-version }} not found"
+            echo "FORMULA_EXISTS=0" >> $GITHUB_ENV
+          fi
+
+      - name: Audit formula for PHP ${{ matrix.php-version }}
+        if: env.FORMULA_EXISTS == 1
+        run: |
+          # Use formula name instead of path
+          brew audit --strict ${{ env.FORMULA_NAME }}
+
+      - name: Test formula installation
+        if: env.FORMULA_EXISTS == 1
+        run: |
+          brew install --build-from-source ${{ env.FORMULA_NAME }}
+
+      - name: Verify installation
+        if: env.FORMULA_EXISTS == 1
+        run: |
+          # Verify installation
+          brew list ${{ env.FORMULA_NAME }}
+          
+          # Find the ddtrace.so file location
+          EXTENSION_PATH=$(find -L $(brew --prefix ${{ env.FORMULA_NAME }}) -name "ddtrace.so" | head -n 1)
+          
+          if [ -n "$EXTENSION_PATH" ]; then
+            echo "EXTENSION_PATH=$EXTENSION_PATH" >> $GITHUB_ENV
+            echo "Extension found at: $EXTENSION_PATH"
+          else
+            echo "Extension ddtrace.so not found!"
+            exit 1
+          fi
+
+      - name: Test PHP extension loading
+        if: env.FORMULA_EXISTS == 1 && env.EXTENSION_PATH != ''
+        run: |
+          # Create PHP ini directory if it doesn't exist
+          PHP_INI_DIR=$(php -r "echo php_ini_loaded_file();")
+          PHP_CONF_DIR=$(dirname "$PHP_INI_DIR")/conf.d
+          sudo mkdir -p $PHP_CONF_DIR
+          
+          # Create extension config file
+          echo "extension=${{ env.EXTENSION_PATH }}" | sudo tee $PHP_CONF_DIR/ddtrace.ini
+          
+          # Verify PHP extension loads correctly
+          php -m | grep ddtrace || { echo "Extension not loaded"; exit 1; }
+
+      - name: Run basic extension test
+        if: env.FORMULA_EXISTS == 1 && env.EXTENSION_PATH != ''
+        run: |
+          # Create a simple test script
+          echo '<?php if (extension_loaded("ddtrace")) { echo "ddtrace extension loaded successfully\n"; } else { echo "ddtrace extension not loaded\n"; exit(1); } ?>' > test.php
+          # Run the test
+          php test.php
