@@ -43,10 +43,10 @@ jobs:
       - name: Check for formula
         run: |
           # Determine if formula exists for this PHP version
-          if [ -f "$GITHUB_WORKSPACE/Formula/php@${{ matrix.php-version }}.rb" ]; then
+          if [ -f "$GITHUB_WORKSPACE/Formula/ddtrace@${{ matrix.php-version }}.rb" ]; then
             echo "FORMULA_EXISTS=1" >> $GITHUB_ENV
-            echo "FORMULA_PATH=Formula/php@${{ matrix.php-version }}.rb" >> $GITHUB_ENV
-            echo "FORMULA_NAME=php@${{ matrix.php-version }}" >> $GITHUB_ENV
+            echo "FORMULA_PATH=Formula/ddtrace@${{ matrix.php-version }}.rb" >> $GITHUB_ENV
+            echo "FORMULA_NAME=ddtrace@${{ matrix.php-version }}" >> $GITHUB_ENV
           else
             echo "Formula for PHP ${{ matrix.php-version }} not found"
             echo "FORMULA_EXISTS=0" >> $GITHUB_ENV
