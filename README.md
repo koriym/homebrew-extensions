@@ -16,6 +16,16 @@ brew tap koriym/extensions
 brew install koriym/extensions/ddtrace
 ```
 
+## Development
+
+To install the latest version of a formula from the repository, run the following command:
+
+```bash
+git clone https://github.com/koriym/homebrew-extensions.git
+cd homebrew-extensions
+brew install -s ./ddtrace.rb
+```
+
 ## Features
 
 - Non-destructive configuration - existing configuration files are preserved during updates
